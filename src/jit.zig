@@ -1,5 +1,6 @@
 const std = @import("std");
-
+const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayList;
 const jit = @This();
 
 var cells = [_]u8{0} ** 65536;
@@ -21,8 +22,8 @@ pub const Token = union(enum) {
     rparen,
 };
 
-pub fn parseAlloc(allocator: std.mem.Allocator, code: []const u8) ![]const Token {
-    var tokens = std.ArrayList(Token).init(allocator);
+pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
+    var tokens = ArrayList(Token).init(allocator);
     defer tokens.deinit();
     var i: usize = 0;
     for (code) |c| {
@@ -45,7 +46,7 @@ pub fn parseAlloc(allocator: std.mem.Allocator, code: []const u8) ![]const Token
     return try allocator.dupe(Token, tokens.items);
 }
 
-pub fn optimizeAlloc(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
+pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
     const cons = try optimizeConsecutiveAdds(allocator, program);
     defer allocator.free(cons);
 
@@ -55,8 +56,8 @@ pub fn optimizeAlloc(allocator: std.mem.Allocator, program: []const Token) ![]co
     return try allocator.dupe(Token, opp);
 }
 
-fn optimizeConsecutiveAdds(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
-    var optimized = std.ArrayList(Token).init(allocator);
+fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]const Token {
+    var optimized = ArrayList(Token).init(allocator);
     defer optimized.deinit();
 
     var i: usize = 0;
@@ -97,8 +98,8 @@ fn optimizeConsecutiveAdds(allocator: std.mem.Allocator, program: []const Token)
     return try allocator.dupe(Token, optimized.items);
 }
 
-fn optimizeOpositeAlloc(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
-    var optimized = std.ArrayList(Token).init(allocator);
+fn optimizeOpositeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
+    var optimized = ArrayList(Token).init(allocator);
     defer optimized.deinit();
 
     var i: usize = 0;
