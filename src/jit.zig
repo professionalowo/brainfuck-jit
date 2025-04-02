@@ -46,15 +46,11 @@ pub fn parseAlloc(allocator: std.mem.Allocator, code: []const u8) ![]const Token
 }
 
 pub fn optimizeAlloc(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
-    std.debug.print("Before collapsing consecutive additions: {d}\n", .{program.len});
-
     const cons = try optimizeConsecutiveAdds(allocator, program);
     defer allocator.free(cons);
-    std.debug.print("After collapsing consecutive additions: {d}\n", .{cons.len});
 
     const opp = try optimizeOpositeAlloc(allocator, cons);
     defer allocator.free(opp);
-    std.debug.print("After collapsing opposite operations: {d}\n", .{opp.len});
 
     return try allocator.dupe(Token, opp);
 }

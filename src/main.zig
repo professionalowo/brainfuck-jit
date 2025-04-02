@@ -21,6 +21,5 @@ pub fn main() !void {
 
     const optimized = try jit.optimizeAlloc(allocator, tokens);
     defer allocator.free(optimized);
-    std.debug.print("Running program...\n", .{});
     try jit.run(optimized);
 }
