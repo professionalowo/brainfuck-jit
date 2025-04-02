@@ -21,7 +21,7 @@ pub const Token = union(enum) {
     rparen,
 };
 
-pub fn parseAlloc(allocator: std.mem.Allocator, code: []const u8) ![]Token {
+pub fn parseAlloc(allocator: std.mem.Allocator, code: []const u8) ![]const Token {
     var tokens = std.ArrayList(Token).init(allocator);
     defer tokens.deinit();
     var i: usize = 0;
@@ -45,7 +45,126 @@ pub fn parseAlloc(allocator: std.mem.Allocator, code: []const u8) ![]Token {
     return try allocator.dupe(Token, tokens.items);
 }
 
-pub fn run(program: []Token) !void {
+pub fn optimizeAlloc(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
+    std.debug.print("Before collapsing consecutive additions: {d}\n", .{program.len});
+
+    const cons = try optimizeConsecutiveAdds(allocator, program);
+    defer allocator.free(cons);
+    std.debug.print("After collapsing consecutive additions: {d}\n", .{cons.len});
+
+    const opp = try optimizeOpositeAlloc(allocator, cons);
+    defer allocator.free(opp);
+    std.debug.print("After collapsing opposite operations: {d}\n", .{opp.len});
+
+    return try allocator.dupe(Token, opp);
+}
+
+fn optimizeConsecutiveAdds(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
+    var optimized = std.ArrayList(Token).init(allocator);
+    defer optimized.deinit();
+
+    var i: usize = 0;
+    while (i < program.len) : (i += 1) {
+        const token = program[i];
+        switch (token) {
+            .plus => |add| {
+                var count: u8 = 1;
+                while (i + 1 < program.len and program[i + 1] == .plus) : (i += 1) {
+                    count += add;
+                }
+                try optimized.append(Token{ .plus = count });
+            },
+            .minus => |subtract| {
+                var count: u8 = 1;
+                while (i + 1 < program.len and program[i + 1] == .minus) : (i += 1) {
+                    count += subtract;
+                }
+                try optimized.append(Token{ .minus = count });
+            },
+            .inc => |increment| {
+                var count: u8 = 1;
+                while (i + 1 < program.len and program[i + 1] == .inc) : (i += 1) {
+                    count += increment;
+                }
+                try optimized.append(Token{ .inc = count });
+            },
+            .dec => |decrement| {
+                var count: u8 = 1;
+                while (i + 1 < program.len and program[i + 1] == .dec) : (i += 1) {
+                    count += decrement;
+                }
+                try optimized.append(Token{ .dec = count });
+            },
+            else => try optimized.append(token),
+        }
+    }
+    return try allocator.dupe(Token, optimized.items);
+}
+
+fn optimizeOpositeAlloc(allocator: std.mem.Allocator, program: []const Token) ![]const Token {
+    var optimized = std.ArrayList(Token).init(allocator);
+    defer optimized.deinit();
+
+    var i: usize = 0;
+    while (i < program.len) : (i += 1) {
+        const token = program[i];
+        switch (token) {
+            .plus => |add| {
+                var subtract: u8 = 0;
+                while (i + 1 < program.len and program[i + 1] == .minus) : (i += 1) {
+                    subtract += program[i + 1].minus;
+                }
+                const append = if (add >= subtract)
+                    Token{ .plus = add - subtract }
+                else
+                    Token{ .minus = subtract - add };
+
+                try optimized.append(append);
+            },
+            .minus => |subtract| {
+                var add: u8 = 0;
+                while (i + 1 < program.len and program[i + 1] == .plus) : (i += 1) {
+                    add += program[i + 1].plus;
+                }
+                const append = if (subtract >= add)
+                    Token{ .minus = subtract - add }
+                else
+                    Token{ .plus = add - subtract };
+
+                try optimized.append(append);
+            },
+            .inc => |increment| {
+                var decrement: u8 = 0;
+                while (i + 1 < program.len and program[i + 1] == .dec) : (i += 1) {
+                    decrement += program[i + 1].dec;
+                }
+                const append = if (increment >= decrement)
+                    Token{ .inc = increment - decrement }
+                else
+                    Token{ .dec = decrement - increment };
+
+                try optimized.append(append);
+            },
+            .dec => |decrement| {
+                var increment: u8 = 0;
+                while (i + 1 < program.len and program[i + 1] == .inc) : (i += 1) {
+                    increment += program[i + 1].inc;
+                }
+                const append = if (decrement >= increment)
+                    Token{ .dec = decrement - increment }
+                else
+                    Token{ .inc = increment - decrement };
+
+                try optimized.append(append);
+            },
+            else => try optimized.append(token),
+        }
+    }
+
+    return try allocator.dupe(Token, optimized.items);
+}
+
+pub fn run(program: []const Token) !void {
     while (programCounter < program.len) : (programCounter += 1) {
         switch (program[programCounter]) {
             .plus => |add| cells[currentCell] +%= add,
