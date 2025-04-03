@@ -12,9 +12,8 @@ pub fn main() !void {
     const joined: []const u8 = try mem.join(allocator, "", args[1..]);
     defer allocator.free(joined);
 
-    if (args.len < 2) {
-        @panic("Usage: brainfuck [code...]\n");
-    }
+    if (args.len < 2) @panic("Usage: brainfuck [code...]\n");
+
     const trimmed = mem.trim(u8, joined, &[_]u8{ 0, ' ', '\n', '\t', '\r' });
     const tokens = try jit.parseAlloc(allocator, trimmed);
     defer allocator.free(tokens);
