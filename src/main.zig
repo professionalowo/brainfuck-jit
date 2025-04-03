@@ -15,10 +15,10 @@ pub fn main() !void {
     if (args.len < 2) @panic("Usage: brainfuck [code...]\n");
 
     const trimmed = mem.trim(u8, joined, &[_]u8{ 0, ' ', '\n', '\t', '\r' });
-    const tokens = try jit.parseAlloc(allocator, trimmed);
+    const tokens = try jit.parser.parseAlloc(allocator, trimmed);
     defer allocator.free(tokens);
 
-    const optimized = try jit.optimizeAlloc(allocator, tokens);
+    const optimized = try jit.optimizer.optimizeAlloc(allocator, tokens);
     defer allocator.free(optimized);
     try jit.run(optimized);
 }
