@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const TokenList = std.ArrayList(Token);
 
 const jit = @This();
 
@@ -23,7 +23,7 @@ var currentCell: usize = 0;
 var programCounter: usize = 0;
 
 pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
-    var tokens = ArrayList(Token).init(allocator);
+    var tokens = TokenList.init(allocator);
     try tokens.ensureTotalCapacityPrecise(code.len);
     defer tokens.deinit();
     var i: usize = 0;
@@ -44,7 +44,7 @@ pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
             i += 1;
         }
     }
-    return try allocator.dupe(Token, tokens.items);
+    return try tokens.toOwnedSlice();
 }
 
 pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
@@ -52,13 +52,11 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Toke
     defer allocator.free(cons);
 
     const opp = try optimizeOppositeAlloc(allocator, cons);
-    defer allocator.free(opp);
-
-    return try allocator.dupe(Token, opp);
+    return opp;
 }
 
 fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]const Token {
-    var optimized = ArrayList(Token).init(allocator);
+    var optimized = TokenList.init(allocator);
     defer optimized.deinit();
 
     var i: usize = 0;
@@ -96,11 +94,11 @@ fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]cons
             else => try optimized.append(token),
         }
     }
-    return try allocator.dupe(Token, optimized.items);
+    return try optimized.toOwnedSlice();
 }
 
 fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
-    var optimized = ArrayList(Token).init(allocator);
+    var optimized = TokenList.init(allocator);
     defer optimized.deinit();
 
     var i: usize = 0;
@@ -159,7 +157,7 @@ fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) ![]const 
         }
     }
 
-    return try allocator.dupe(Token, optimized.items);
+    return try optimized.toOwnedSlice();
 }
 
 pub fn run(program: []const Token) !void {
