@@ -24,6 +24,7 @@ var programCounter: usize = 0;
 
 pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
     var tokens = ArrayList(Token).init(allocator);
+    try tokens.ensureTotalCapacity(code.len);
     defer tokens.deinit();
     var i: usize = 0;
     for (code) |c| {
@@ -50,7 +51,7 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Toke
     const cons = try optimizeConsecutiveAdds(allocator, program);
     defer allocator.free(cons);
 
-    const opp = try optimizeOpositeAlloc(allocator, cons);
+    const opp = try optimizeOppositeAlloc(allocator, cons);
     defer allocator.free(opp);
 
     return try allocator.dupe(Token, opp);
@@ -58,6 +59,7 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Toke
 
 fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]const Token {
     var optimized = ArrayList(Token).init(allocator);
+    try optimized.ensureTotalCapacity(program.len);
     defer optimized.deinit();
 
     var i: usize = 0;
@@ -98,8 +100,9 @@ fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]cons
     return try allocator.dupe(Token, optimized.items);
 }
 
-fn optimizeOpositeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
+fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
     var optimized = ArrayList(Token).init(allocator);
+    try optimized.ensureTotalCapacity(program.len);
     defer optimized.deinit();
 
     var i: usize = 0;
