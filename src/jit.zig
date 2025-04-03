@@ -171,9 +171,7 @@ pub fn run(program: []const Token) !void {
             .minus => |subtract| cells[currentCell] -%= subtract,
             .inc => |increment| currentCell +%= increment,
             .dec => |decrement| currentCell -%= decrement,
-            .putc => {
-                try stdout.print("{c}", .{cells[currentCell]});
-            },
+            .putc => try stdout.print("{c}", .{cells[currentCell]}),
             .getc => cells[currentCell] = try stdio.readByte(),
             .lparen => if (cells[currentCell] == 0) {
                 var depth: usize = 1;
