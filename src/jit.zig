@@ -1,12 +1,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
+
 const jit = @This();
-
-var cells = [_]u8{0} ** 65536;
-
-var currentCell: usize = 0;
-var programCounter: usize = 0;
 
 pub const Token = union(enum) {
     inc: u8,
@@ -21,6 +17,10 @@ pub const Token = union(enum) {
     lparen,
     rparen,
 };
+
+var cells = [_]u8{0} ** 65536;
+var currentCell: usize = 0;
+var programCounter: usize = 0;
 
 pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
     var tokens = ArrayList(Token).init(allocator);
