@@ -23,8 +23,7 @@ var currentCell: usize = 0;
 var programCounter: usize = 0;
 
 pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
-    var tokens = TokenList.init(allocator);
-    try tokens.ensureTotalCapacityPrecise(code.len);
+    var tokens = try TokenList.initCapacity(allocator, code.len);
     var i: usize = 0;
     for (code) |c| {
         const token: ?Token = switch (c) {
