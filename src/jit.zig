@@ -1,10 +1,7 @@
 const std = @import("std");
 const t = @import("token");
 const Token = t.Token;
-const TokenList = t.TokenList;
-const Allocator = std.mem.Allocator;
 
-const jit = @This();
 pub const parser = @import("parser");
 pub const optimizer = @import("optimizer");
 
