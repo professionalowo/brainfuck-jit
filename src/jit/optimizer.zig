@@ -4,7 +4,7 @@ const t = @import("token");
 const Token = t.Token;
 const TokenList = t.TokenList;
 
-pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
+pub fn optimizeAlloc(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
     const cons = try optimizeConsecutiveAdds(allocator, program);
     defer allocator.free(cons);
 
@@ -12,7 +12,7 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) ![]const Toke
     return opp;
 }
 
-fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]const Token {
+fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
     var optimized = TokenList.init(allocator);
 
     var i: usize = 0;
@@ -53,7 +53,7 @@ fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]cons
     return try optimized.toOwnedSlice();
 }
 
-fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) ![]const Token {
+fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
     var optimized = TokenList.init(allocator);
 
     var i: usize = 0;
