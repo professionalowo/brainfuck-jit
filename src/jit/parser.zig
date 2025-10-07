@@ -9,10 +9,10 @@ pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
     var i: usize = 0;
     for (code) |c| {
         const token: ?Token = switch (c) {
-            '+' => Token{ .plus = 1 },
-            '-' => Token{ .minus = 1 },
-            '>' => Token{ .inc = 1 },
-            '<' => Token{ .dec = 1 },
+            '+' => .{ .plus = 1 },
+            '-' => .{ .minus = 1 },
+            '>' => .{ .inc = 1 },
+            '<' => .{ .dec = 1 },
             '.' => .putc,
             ',' => .getc,
             '[' => .lparen,
