@@ -25,5 +25,5 @@ pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
             i += 1;
         }
     }
-    return allocator.realloc(tokens, i);
+    return tokens[0..i];
 }
