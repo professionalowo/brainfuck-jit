@@ -1,8 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const t = @import("token");
-const Token = t.Token;
-const TokenList = t.TokenList;
+const Token = @import("token").Token;
 
 pub fn parseAlloc(allocator: Allocator, code: []const u8) ![]const Token {
     var tokens = try allocator.alloc(Token, code.len);

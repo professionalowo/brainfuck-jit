@@ -24,28 +24,28 @@ fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) ![]cons
                 while (i + 1 < program.len and program[i + 1] == .plus) : (i += 1) {
                     count += add;
                 }
-                try optimized.append(Token{ .plus = count });
+                try optimized.append(.{ .plus = count });
             },
             .minus => |subtract| {
                 var count: u8 = 1;
                 while (i + 1 < program.len and program[i + 1] == .minus) : (i += 1) {
                     count += subtract;
                 }
-                try optimized.append(Token{ .minus = count });
+                try optimized.append(.{ .minus = count });
             },
             .inc => |increment| {
                 var count: u8 = 1;
                 while (i + 1 < program.len and program[i + 1] == .inc) : (i += 1) {
                     count += increment;
                 }
-                try optimized.append(Token{ .inc = count });
+                try optimized.append(.{ .inc = count });
             },
             .dec => |decrement| {
                 var count: u8 = 1;
                 while (i + 1 < program.len and program[i + 1] == .dec) : (i += 1) {
                     count += decrement;
                 }
-                try optimized.append(Token{ .dec = count });
+                try optimized.append(.{ .dec = count });
             },
             else => try optimized.append(token),
         }
