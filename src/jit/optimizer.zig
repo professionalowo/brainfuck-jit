@@ -13,7 +13,7 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) Allocator.Err
 }
 
 fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
-    var optimized = TokenList.init(allocator);
+    var optimized = TokenList.empty;
 
     var i: usize = 0;
     while (i < program.len) : (i += 1) {
@@ -25,16 +25,16 @@ fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) Allocat
                     count += v;
                 }
                 const tok = @unionInit(Token, @tagName(tag), count);
-                try optimized.append(tok);
+                try optimized.append(allocator, tok);
             },
-            else => try optimized.append(token),
+            else => try optimized.append(allocator, token),
         }
     }
-    return try optimized.toOwnedSlice();
+    return try optimized.toOwnedSlice(allocator);
 }
 
 fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
-    var optimized = TokenList.init(allocator);
+    var optimized = TokenList.empty;
 
     var i: usize = 0;
     while (i < program.len) : (i += 1) {
@@ -50,7 +50,7 @@ fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator
                 else
                     Token{ .minus = subtract - add };
 
-                try optimized.append(append);
+                try optimized.append(allocator, append);
             },
             .minus => |subtract| {
                 var add: u8 = 0;
@@ -62,7 +62,7 @@ fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator
                 else
                     Token{ .plus = add - subtract };
 
-                try optimized.append(append);
+                try optimized.append(allocator, append);
             },
             .inc => |increment| {
                 var decrement: u8 = 0;
@@ -74,7 +74,7 @@ fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator
                 else
                     Token{ .dec = decrement - increment };
 
-                try optimized.append(append);
+                try optimized.append(allocator, append);
             },
             .dec => |decrement| {
                 var increment: u8 = 0;
@@ -86,11 +86,11 @@ fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator
                 else
                     Token{ .inc = increment - decrement };
 
-                try optimized.append(append);
+                try optimized.append(allocator, append);
             },
-            else => try optimized.append(token),
+            else => try optimized.append(allocator, token),
         }
     }
 
-    return try optimized.toOwnedSlice();
+    return try optimized.toOwnedSlice(allocator);
 }
