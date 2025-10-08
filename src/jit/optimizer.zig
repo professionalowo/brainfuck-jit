@@ -13,7 +13,7 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) Allocator.Err
 }
 
 fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
-    var optimized = TokenList.empty;
+    var optimized = try TokenList.initCapacity(allocator, program.len);
 
     var i: usize = 0;
     while (i < program.len) : (i += 1) {
