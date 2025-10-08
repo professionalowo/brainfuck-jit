@@ -1,6 +1,5 @@
 const std = @import("std");
-const t = @import("token");
-const Token = t.Token;
+const Token = @import("token").Token;
 
 pub const parser = @import("parser");
 pub const optimizer = @import("optimizer");
