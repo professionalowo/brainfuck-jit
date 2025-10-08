@@ -13,8 +13,10 @@ pub fn optimizeAlloc(allocator: Allocator, program: []const Token) Allocator.Err
 }
 
 fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
-    var optimized = try TokenList.initCapacity(allocator, program.len);
+    var optimized = try allocator.alloc(Token, program.len);
+    defer allocator.free(optimized);
 
+    var tokenCount: usize = 0;
     var i: usize = 0;
     while (i < program.len) : (i += 1) {
         const token = program[i];
@@ -24,13 +26,13 @@ fn optimizeConsecutiveAdds(allocator: Allocator, program: []const Token) Allocat
                 while (i + 1 < program.len and program[i + 1] == tag) : (i += 1) {
                     count += v;
                 }
-                const tok = @unionInit(Token, @tagName(tag), count);
-                try optimized.append(allocator, tok);
+                optimized[tokenCount] = @unionInit(Token, @tagName(tag), count);
             },
-            else => try optimized.append(allocator, token),
+            else => optimized[tokenCount] = token,
         }
+        tokenCount += 1;
     }
-    return try optimized.toOwnedSlice(allocator);
+    return allocator.dupe(Token, optimized[0..tokenCount]);
 }
 
 fn optimizeOppositeAlloc(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
