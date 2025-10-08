@@ -10,9 +10,10 @@ var currentCell: usize = 0;
 var programCounter: usize = 0;
 
 pub fn run(program: []const Token) !void {
-    var bw = std.io.bufferedWriter(std.io.getStdOut().writer());
-    const stdout = bw.writer();
-    const stdio = std.io.getStdIn().reader();
+    var w = std.fs.File.stdout().writer(&.{});
+    const stdout = &w.interface;
+    var r = std.fs.File.stdin().reader(&.{});
+    const stdin = &r.interface;
     while (programCounter < program.len) : (programCounter += 1) {
         switch (program[programCounter]) {
             .plus => |add| cells[currentCell] +%= add,
@@ -20,7 +21,7 @@ pub fn run(program: []const Token) !void {
             .inc => |increment| currentCell +%= increment,
             .dec => |decrement| currentCell -%= decrement,
             .putc => try stdout.print("{c}", .{cells[currentCell]}),
-            .getc => cells[currentCell] = try stdio.readByte(),
+            .getc => cells[currentCell] = try stdin.takeByte(),
             .lparen => if (cells[currentCell] == 0) {
                 var depth: usize = 1;
                 while (depth > 0) {
@@ -45,5 +46,5 @@ pub fn run(program: []const Token) !void {
             },
         }
     }
-    try bw.flush();
+    try stdout.flush();
 }
