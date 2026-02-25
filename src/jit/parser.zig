@@ -4,7 +4,6 @@ const Token = @import("token").Token;
 
 pub fn parseAlloc(allocator: Allocator, code: []const u8) Allocator.Error![]const Token {
     var tokens = try allocator.alloc(Token, code.len);
-    defer allocator.free(tokens);
 
     var i: usize = 0;
     for (code) |c| {
@@ -13,7 +12,7 @@ pub fn parseAlloc(allocator: Allocator, code: []const u8) Allocator.Error![]cons
             i += 1;
         }
     }
-    return allocator.dupe(Token, tokens[0..i]);
+    return allocator.realloc(tokens, i);
 }
 
 fn charToToken(char: u8) ?Token {
