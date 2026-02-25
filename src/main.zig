@@ -1,7 +1,11 @@
 const std = @import("std");
 const mem = std.mem;
 const process = std.process;
+const parser = @import("frontend").Parser;
 const interpreter = @import("interpret.zig");
+const optimizer = @import("optimizer.zig");
+const jit = @import("jit");
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{ .thread_safe = false }){};
     defer _ = gpa.deinit();
@@ -16,10 +20,10 @@ pub fn main() !void {
     defer allocator.free(joined);
 
     const trimmed = mem.trim(u8, joined, &[_]u8{ 0, ' ', '\n', '\t', '\r' });
-    const tokens = try interpreter.parser.parseAlloc(allocator, trimmed);
+    const tokens = try parser.parseAlloc(allocator, trimmed);
     defer allocator.free(tokens);
 
-    const optimized = try interpreter.optimizer.optimizeAlloc(allocator, tokens);
+    const optimized = try optimizer.optimizeAlloc(allocator, tokens);
     defer allocator.free(optimized);
     try interpreter.run(optimized);
 }
