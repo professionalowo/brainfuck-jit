@@ -1,8 +1,8 @@
 const std = @import("std");
-const Token = @import("token").Token;
+const Token = @import("token.zig").Token;
 
-pub const parser = @import("parser");
-pub const optimizer = @import("optimizer");
+pub const parser = @import("parser.zig");
+pub const optimizer = @import("optimizer.zig");
 
 var cells = [_]u8{0} ** 65536;
 var currentCell: usize = 0;

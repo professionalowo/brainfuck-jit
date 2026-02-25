@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const t = @import("token");
+const t = @import("token.zig");
 const Token = t.Token;
 const TokenList = t.TokenList;
 

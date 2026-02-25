@@ -19,34 +19,10 @@ pub fn build(b: *std.Build) void {
     // some compilation options, such as optimization mode and linked system libraries.
     // Every executable or library we compile will be based on one or more modules.
     const jit_mod = b.createModule(.{
-        .root_source_file = b.path("src/jit.zig"),
+        .root_source_file = b.path("src/jit/jit.zig"),
         .target = target,
         .optimize = optimize,
     });
-
-    const token_mod = b.createModule(.{
-        .root_source_file = b.path("src/jit/token.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const parser_mod = b.createModule(.{
-        .root_source_file = b.path("src/jit/parser.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const optimizer_mod = b.createModule(.{
-        .root_source_file = b.path("src/jit/optimizer.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    parser_mod.addImport("token", token_mod);
-
-    optimizer_mod.addImport("token", token_mod);
-
-    jit_mod.addImport("token", token_mod);
-    jit_mod.addImport("parser", parser_mod);
-    jit_mod.addImport("optimizer", optimizer_mod);
 
     // We will also create a module for our other entry point, 'main.zig'.
     const exe_mod = b.createModule(.{
