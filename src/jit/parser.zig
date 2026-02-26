@@ -12,7 +12,7 @@ pub fn parseAlloc(allocator: Allocator, code: []const u8) Allocator.Error![]cons
             i += 1;
         }
     }
-    return tokens[0..i];
+    return allocator.realloc(tokens, i);
 }
 
 fn charToToken(char: u8) ?Token {
