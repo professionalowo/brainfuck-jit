@@ -1,8 +1,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const t = @import("token");
-const Token = t.Token;
-const TokenList = t.TokenList;
+const frontend = @import("frontend");
+const Token = frontend.Token;
+const TokenList = frontend.TokenList;
 
 pub fn optimizeAlloc(allocator: Allocator, program: []const Token) Allocator.Error![]const Token {
     const cons = try optimizeConsecutiveAdds(allocator, program);

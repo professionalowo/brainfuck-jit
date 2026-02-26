@@ -1,5 +1,4 @@
 const std = @import("std");
-pub const TokenList = std.ArrayList(Token);
 
 pub const Token = union(enum) {
     inc: u8,

@@ -1,8 +1,5 @@
 const std = @import("std");
-const Token = @import("token").Token;
-
-pub const parser = @import("parser");
-pub const optimizer = @import("optimizer");
+const Token = @import("frontend").Token;
 
 var cells = [_]u8{0} ** 65536;
 var currentCell: usize = 0;
@@ -45,5 +42,6 @@ pub fn run(program: []const Token) !void {
             },
         }
     }
+    try stdout.printAsciiChar('\n', .{});
     try stdout.flush();
 }
