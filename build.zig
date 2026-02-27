@@ -79,4 +79,14 @@ pub fn build(b: *std.Build) void {
     // This will evaluate the `run` step rather than the default, which is "install".
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+
+    const test_step = b.step("test", "Run unit tests");
+
+    const tests = b.addTest(.{
+        .root_module = exe_mod,
+    });
+
+    const run_unit_tests = b.addRunArtifact(tests);
+    test_step.dependOn(&run_unit_tests.step);
+    b.installArtifact(tests);
 }

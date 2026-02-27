@@ -5,19 +5,15 @@ var cells = [_]u8{0} ** 65536;
 var currentCell: usize = 0;
 var programCounter: usize = 0;
 
-pub fn run(program: []const Token) !void {
-    var w = std.fs.File.stdout().writer(&.{});
-    const stdout = &w.interface;
-    var r = std.fs.File.stdin().reader(&.{});
-    const stdin = &r.interface;
+pub fn run(program: []const Token, writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
     while (programCounter < program.len) : (programCounter += 1) {
         switch (program[programCounter]) {
             .plus => |add| cells[currentCell] +%= add,
             .minus => |subtract| cells[currentCell] -%= subtract,
             .inc => |increment| currentCell +%= increment,
             .dec => |decrement| currentCell -%= decrement,
-            .putc => try stdout.print("{c}", .{cells[currentCell]}),
-            .getc => cells[currentCell] = try stdin.takeByte(),
+            .putc => try writer.print("{c}", .{cells[currentCell]}),
+            .getc => cells[currentCell] = try reader.takeByte(),
             .lparen => if (cells[currentCell] == 0) {
                 var depth: usize = 1;
                 while (depth > 0) {
@@ -42,6 +38,5 @@ pub fn run(program: []const Token) !void {
             },
         }
     }
-    try stdout.printAsciiChar('\n', .{});
-    try stdout.flush();
+    try writer.flush();
 }
