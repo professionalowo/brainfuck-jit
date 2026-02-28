@@ -25,5 +25,36 @@ pub fn main() !void {
 
     const optimized = try optimizer.optimizeAlloc(allocator, tokens);
     defer allocator.free(optimized);
-    try interpreter.run(optimized);
+
+    var w = std.fs.File.stdout().writer(&.{});
+    const stdout = &w.interface;
+    var r = std.fs.File.stdin().reader(&.{});
+    const stdin = &r.interface;
+    try interpreter.run(optimized, stdout, stdin);
+}
+
+test "helloworld" {
+    const program = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
+    const expected = "Hello World!\n";
+
+    var gpa: std.heap.DebugAllocator(.{}) = .init;
+    const dbg_allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        if (deinit_status == .leak) std.testing.expect(false) catch @panic("TEST FAIL: leaked memory");
+    }
+
+    const tokens = try parser.parseAlloc(dbg_allocator, program);
+    defer dbg_allocator.free(tokens);
+
+    const optimized = try optimizer.optimizeAlloc(dbg_allocator, tokens);
+    defer dbg_allocator.free(optimized);
+
+    var reader = std.Io.Reader.failing;
+
+    var buffer = [_]u8{0} ** 4096;
+    var writer = std.Io.Writer.fixed(&buffer);
+
+    try interpreter.run(optimized, &writer, &reader);
+    try std.testing.expectEqualStrings(expected, writer.buffer[0..writer.end]);
 }
