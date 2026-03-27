@@ -10,8 +10,8 @@ const arch_backend = switch (builtin.target.cpu.arch) {
     else => @compileError("cpu arch not supported for jit-compilation"),
 };
 
-pub fn compile(gpa: std.mem.Allocator, program: []const Token) !context.AssemblerContext {
-    var ctx = context.AssemblerContext.init(gpa, 64 * 1024);
+pub fn compile(gpa: std.mem.Allocator, program: []const Token, writer: *std.Io.Writer, reader: *std.Io.Reader) !context.AssemblerContext {
+    var ctx = context.AssemblerContext.init(gpa, writer, reader, 64 * 1024);
 
     try arch_backend.emitStart(&ctx);
 

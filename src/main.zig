@@ -26,7 +26,12 @@ pub fn main() !void {
     const optimized = try optimizer.optimizeAlloc(allocator, tokens);
     defer allocator.free(optimized);
 
-    var compiled = try jit.compile(allocator, optimized);
+    var w = std.fs.File.stdout().writer(&.{});
+    const stdout = &w.interface;
+    var r = std.fs.File.stdin().reader(&.{});
+    const stdin = &r.interface;
+
+    var compiled = try jit.compile(allocator, optimized, stdout, stdin);
     defer compiled.deinit();
 
     try jit.Runner.run(compiled.binary.items);

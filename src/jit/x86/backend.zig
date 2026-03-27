@@ -39,27 +39,31 @@ pub fn emitDecPtr(ctx: *AssemblerContext, value: u8) !void {
 pub fn emitPutc(ctx: *AssemblerContext) !void {
     try cg.push(ctx, Register.rsi);
     try cg.push(ctx, Register.rbx);
-    try cg.mov_from_ptr(ctx, Register.rax, Register.rsi);
-    try cg.mov_immediate(ctx, Register.rcx, @intFromPtr(&putc));
-    try cg.call(ctx, Register.rcx);
+    try cg.mov_immediate(ctx, Register.rdi, @intFromPtr(ctx.writer));
+    try cg.mov_from_ptr(ctx, Register.rsi, Register.rsi);
+    try cg.mov_immediate(ctx, Register.rax, @intFromPtr(&putc));
+    try cg.call(ctx, Register.rax);
     try cg.pop(ctx, Register.rbx);
     try cg.pop(ctx, Register.rsi);
 }
 
-fn putc(c: u8) void {
-    std.debug.print("{c}", .{c});
+fn putc(writer: *std.Io.Writer, c: u8) callconv(.c) void {
+    writer.print("{c}", .{c}) catch {};
 }
 
 pub fn emitGetc(ctx: *AssemblerContext) !void {
     try cg.push(ctx, Register.rsi);
-    try cg.mov_immediate(ctx, Register.rax, 0);
-    try cg.mov_immediate(ctx, Register.rcx, @intFromPtr(&getc));
-    try cg.call(ctx, Register.rcx);
+    try cg.push(ctx, Register.rbx);
+    try cg.mov_immediate(ctx, Register.rdi, @intFromPtr(ctx.reader));
+    try cg.mov_immediate(ctx, Register.rax, @intFromPtr(&getc));
+    try cg.call(ctx, Register.rax);
+    try cg.pop(ctx, Register.rbx);
     try cg.pop(ctx, Register.rsi);
+    try cg.mov_to_ptr(ctx, Register.rsi, Register.rax);
 }
 
-fn getc() u8 {
-    return 'a';
+fn getc(reader: *std.Io.Reader) callconv(.c) u8 {
+    return reader.takeByte() catch 0;
 }
 
 pub fn emitLParen(ctx: *AssemblerContext) !u64 {

@@ -125,7 +125,10 @@ pub fn pop(ctx: *AssemblerContext, reg: Register) !void {
 }
 
 test "x86_codegen" {
-    var ctx = AssemblerContext.init(std.testing.allocator, 10);
+    var buffer: [1024]u8 = undefined;
+    var writer = std.Io.Writer.fixed(&buffer);
+    var reader = std.Io.Reader.failing;
+    var ctx = AssemblerContext.init(std.testing.allocator, &writer, &reader, 10);
     defer ctx.deinit();
 
     try mov_immediate(&ctx, Register.rax, 0x12345678);

@@ -5,8 +5,10 @@ pub const AssemblerContext = struct {
     binary: std.ArrayList(u8),
     jump_stack: std.ArrayList(u64),
     tape: []i64,
+    writer: *std.Io.Writer,
+    reader: *std.Io.Reader,
 
-    pub fn init(allocator: std.mem.Allocator, tapeSize: usize) AssemblerContext {
+    pub fn init(allocator: std.mem.Allocator, writer: *std.Io.Writer, reader: *std.Io.Reader, tapeSize: usize) AssemblerContext {
         const tape = allocator.alloc(i64, tapeSize) catch |err| {
             std.debug.panic("Failed to allocate tape: {}", .{err});
         };
@@ -17,6 +19,8 @@ pub const AssemblerContext = struct {
             .binary = .empty,
             .jump_stack = .empty,
             .tape = tape,
+            .writer = writer,
+            .reader = reader,
         };
     }
 
