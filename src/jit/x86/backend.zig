@@ -5,6 +5,8 @@ const JumpContext = @import("../context.zig").JumpContext;
 const JumpCondition = @import("codegen.zig").JumpCondition;
 const Register = @import("codegen.zig").Register;
 
+pub const COMPARE_JUMP_SIZE = 5;
+
 pub fn emitStart(ctx: *AssemblerContext) !void {
     try cg.mov_immediate(ctx, Register.rsi, @intFromPtr(ctx.tape.ptr));
     try cg.mov_immediate(ctx, Register.rbx, 0);
@@ -60,18 +62,16 @@ fn getc() u8 {
     return 'a';
 }
 
-pub fn emitLParen(ctx: *AssemblerContext) !void {
+pub fn emitLParen(ctx: *AssemblerContext) !u64 {
     try cg.mov_from_ptr(ctx, Register.rax, Register.rsi);
     try cg.cmp(ctx, Register.rax, Register.rbx);
-    const jmp_loc = try cg.jump(ctx, JumpCondition.equal, 0);
-    try ctx.push_jump_src(jmp_loc);
+    return cg.jump(ctx, JumpCondition.equal, 0);
 }
 
-pub fn emitRParen(ctx: *AssemblerContext) !void {
+pub fn emitRParen(ctx: *AssemblerContext) !u64 {
     try cg.mov_from_ptr(ctx, Register.rax, Register.rsi);
     try cg.cmp(ctx, Register.rax, Register.rbx);
-    const jmp_loc = try cg.jump(ctx, JumpCondition.notEqual, 0);
-    try ctx.push_jump_target(jmp_loc);
+    return cg.jump(ctx, JumpCondition.notEqual, 0);
 }
 
 test {

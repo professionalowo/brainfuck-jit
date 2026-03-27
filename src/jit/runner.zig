@@ -1,5 +1,4 @@
 const std = @import("std");
-// const std.posix.PROT = std.posix.PROT;
 const AssemblerContext = @import("context.zig").AssemblerContext;
 
 pub fn run(code: []const u8) !void {

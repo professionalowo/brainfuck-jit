@@ -24,18 +24,16 @@ pub fn compile(gpa: std.mem.Allocator, program: []const Token) !context.Assemble
             .putc => try arch_backend.emitPutc(&ctx),
             .getc => try arch_backend.emitGetc(&ctx),
             .lparen => {
-                try arch_backend.emitLParen(&ctx);
+                const jmp_loc = try arch_backend.emitLParen(&ctx);
+                try ctx.jump_stack.append(ctx.allocator, jmp_loc);
             },
             .rparen => {
-                try arch_backend.emitRParen(&ctx);
+                const lparen_loc = ctx.jump_stack.pop() orelse unreachable;
+                const rparen_loc = try arch_backend.emitRParen(&ctx);
+                try ctx.update_jump(lparen_loc, rparen_loc);
+                try ctx.update_jump(rparen_loc, lparen_loc - arch_backend.COMPARE_JUMP_SIZE);
             },
         }
-    }
-
-    for (ctx.jump_srcs.items) |src_idx| {
-        const target_idx = ctx.jump_targets.pop() orelse unreachable;
-        try ctx.update_jump(src_idx, target_idx);
-        try ctx.update_jump(target_idx, src_idx - 5);
     }
 
     try arch_backend.emitEnd(&ctx);

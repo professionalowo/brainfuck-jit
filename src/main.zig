@@ -14,12 +14,10 @@ pub fn main() !void {
     const args = try process.argsAlloc(allocator);
     defer process.argsFree(allocator, args);
 
-    // if (args.len < 2) @panic("Usage: brainfuck [code...]\n");
+    if (args.len < 2) @panic("Usage: brainfuck [code...]\n");
 
-    // const joined: []const u8 = try mem.join(allocator, "", args[1..]);
-    // defer allocator.free(joined);
-
-    const joined = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
+    const joined: []const u8 = try mem.join(allocator, "", args[1..]);
+    defer allocator.free(joined);
 
     const trimmed = mem.trim(u8, joined, &[_]u8{ 0, ' ', '\n', '\t', '\r' });
     const tokens = try parser.parseAlloc(allocator, trimmed);
@@ -30,21 +28,11 @@ pub fn main() !void {
 
     var compiled = try jit.compile(allocator, optimized);
     defer compiled.deinit();
-    std.debug.print("Compiled binary: {x} \nsize: {} bytes\n", .{ compiled.binary.items, compiled.binary.items.len });
 
     try jit.Runner.run(compiled.binary.items);
-
-    // const test_bin = [_]u8{ 0xB8, 0x78, 0x56, 0x34, 0x12, 0xC3 };
-    // try jit.Runner.run(&test_bin);
-
-    // var w = std.fs.File.stdout().writer(&.{});
-    // const stdout = &w.interface;
-    // var r = std.fs.File.stdin().reader(&.{});
-    // const stdin = &r.interface;
-    // try interpreter.run(optimized, stdout, stdin);
 }
 
-test "helloworld" {
+test "interpreter_helloworld" {
     const program = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
     const expected = "Hello World!\n";
 
