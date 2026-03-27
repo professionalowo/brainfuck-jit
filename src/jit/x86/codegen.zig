@@ -116,6 +116,14 @@ pub fn cmp(ctx: *AssemblerContext, reg1: Register, reg2: Register) !void {
     try ctx.append_u8(0xC0 + 8 * @intFromEnum(reg2) + @intFromEnum(reg1));
 }
 
+pub fn push(ctx: *AssemblerContext, reg: Register) !void {
+    try ctx.append_u8(0x50 + @intFromEnum(reg)); // PUSH r64
+}
+
+pub fn pop(ctx: *AssemblerContext, reg: Register) !void {
+    try ctx.append_u8(0x58 + @intFromEnum(reg)); // POP r64
+}
+
 test "x86_codegen" {
     var ctx = AssemblerContext.init(std.testing.allocator, 10);
     defer ctx.deinit();

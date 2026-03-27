@@ -19,7 +19,7 @@ pub fn main() !void {
     // const joined: []const u8 = try mem.join(allocator, "", args[1..]);
     // defer allocator.free(joined);
 
-    const joined = "++++[-].";
+    const joined = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
 
     const trimmed = mem.trim(u8, joined, &[_]u8{ 0, ' ', '\n', '\t', '\r' });
     const tokens = try parser.parseAlloc(allocator, trimmed);
@@ -37,11 +37,11 @@ pub fn main() !void {
     // const test_bin = [_]u8{ 0xB8, 0x78, 0x56, 0x34, 0x12, 0xC3 };
     // try jit.Runner.run(&test_bin);
 
-    var w = std.fs.File.stdout().writer(&.{});
-    const stdout = &w.interface;
-    var r = std.fs.File.stdin().reader(&.{});
-    const stdin = &r.interface;
-    try interpreter.run(optimized, stdout, stdin);
+    // var w = std.fs.File.stdout().writer(&.{});
+    // const stdout = &w.interface;
+    // var r = std.fs.File.stdin().reader(&.{});
+    // const stdin = &r.interface;
+    // try interpreter.run(optimized, stdout, stdin);
 }
 
 test "helloworld" {

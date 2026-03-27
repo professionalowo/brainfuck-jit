@@ -27,16 +27,21 @@ pub fn emitSubImmediate(ctx: *AssemblerContext, value: u8) !void {
 }
 
 pub fn emitIncPtr(ctx: *AssemblerContext, value: u8) !void {
-    try cg.add_ptr(ctx, Register.rsi, value);
+    try cg.add_ptr(ctx, Register.rsi, value * 8);
 }
 
 pub fn emitDecPtr(ctx: *AssemblerContext, value: u8) !void {
-    try cg.sub_ptr(ctx, Register.rsi, value);
+    try cg.sub_ptr(ctx, Register.rsi, value * 8);
 }
 
 pub fn emitPutc(ctx: *AssemblerContext) !void {
-    try cg.mov_immediate(ctx, Register.rax, @intFromPtr(&putc));
-    try cg.call(ctx, Register.rax);
+    try cg.push(ctx, Register.rsi);
+    try cg.push(ctx, Register.rbx);
+    try cg.mov_from_ptr(ctx, Register.rax, Register.rsi);
+    try cg.mov_immediate(ctx, Register.rcx, @intFromPtr(&putc));
+    try cg.call(ctx, Register.rcx);
+    try cg.pop(ctx, Register.rbx);
+    try cg.pop(ctx, Register.rsi);
 }
 
 fn putc(c: u8) void {
@@ -44,9 +49,11 @@ fn putc(c: u8) void {
 }
 
 pub fn emitGetc(ctx: *AssemblerContext) !void {
+    try cg.push(ctx, Register.rsi);
     try cg.mov_immediate(ctx, Register.rax, 0);
-    try cg.mov_immediate(ctx, Register.rax, @intFromPtr(&getc));
-    try cg.call(ctx, Register.rax);
+    try cg.mov_immediate(ctx, Register.rcx, @intFromPtr(&getc));
+    try cg.call(ctx, Register.rcx);
+    try cg.pop(ctx, Register.rsi);
 }
 
 fn getc() u8 {

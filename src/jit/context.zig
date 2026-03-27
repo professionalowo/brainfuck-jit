@@ -10,10 +10,10 @@ pub const AssemblerContext = struct {
     binary: std.ArrayList(u8),
     jump_srcs: std.ArrayList(u64),
     jump_targets: std.ArrayList(u64),
-    tape: []i32,
+    tape: []i64,
 
     pub fn init(allocator: std.mem.Allocator, tapeSize: usize) AssemblerContext {
-        const tape = allocator.alloc(i32, tapeSize) catch |err| {
+        const tape = allocator.alloc(i64, tapeSize) catch |err| {
             std.debug.panic("Failed to allocate tape: {}", .{err});
         };
         @memset(tape, 0);
