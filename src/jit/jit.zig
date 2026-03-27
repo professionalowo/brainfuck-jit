@@ -2,6 +2,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const context = @import("context.zig");
 const Token = @import("frontend").Token;
+pub const Runner = @import("runner.zig");
 
 const arch_backend = switch (builtin.target.cpu.arch) {
     .x86, .x86_64 => @import("x86/backend.zig"),
@@ -9,9 +10,10 @@ const arch_backend = switch (builtin.target.cpu.arch) {
     else => @compileError("cpu arch not supported for jit-compilation"),
 };
 
-pub fn compile(gpa: std.mem.Allocator, program: []const Token) ![]const u8 {
-    var ctx = context.AssemblerContext.init(gpa);
-    defer ctx.binary.deinit(gpa);
+pub fn compile(gpa: std.mem.Allocator, program: []const Token) !context.AssemblerContext {
+    var ctx = context.AssemblerContext.init(gpa, 64 * 1024);
+
+    try arch_backend.emitStart(&ctx);
 
     for (program) |token| {
         switch (token) {
@@ -21,11 +23,24 @@ pub fn compile(gpa: std.mem.Allocator, program: []const Token) ![]const u8 {
             .dec => |decrement| try arch_backend.emitDecPtr(&ctx, decrement),
             .putc => try arch_backend.emitPutc(&ctx),
             .getc => try arch_backend.emitGetc(&ctx),
-            .lparen, .rparen => {}, // handled in a later pass
+            .lparen => {
+                try arch_backend.emitLParen(&ctx);
+            },
+            .rparen => {
+                try arch_backend.emitRParen(&ctx);
+            },
         }
     }
 
-    return ctx.binary.toOwnedSlice(gpa);
+    for (ctx.jump_srcs.items) |src_idx| {
+        const target_idx = ctx.jump_targets.pop() orelse unreachable;
+        try ctx.update_jump(src_idx, target_idx);
+        try ctx.update_jump(target_idx, src_idx - 5);
+    }
+
+    try arch_backend.emitEnd(&ctx);
+
+    return ctx;
 }
 
 test {
