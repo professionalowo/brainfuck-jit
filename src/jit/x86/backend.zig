@@ -1,7 +1,6 @@
 const std = @import("std");
 const cg = @import("codegen.zig");
 const AssemblerContext = @import("../context.zig").AssemblerContext;
-const JumpContext = @import("../context.zig").JumpContext;
 const JumpCondition = @import("codegen.zig").JumpCondition;
 const Register = @import("codegen.zig").Register;
 
