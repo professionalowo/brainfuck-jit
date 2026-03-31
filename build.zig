@@ -82,11 +82,17 @@ pub fn build(b: *std.Build) void {
 
     const test_step = b.step("test", "Run unit tests");
 
-    const tests = b.addTest(.{
+    const exe_tests = b.addTest(.{
         .root_module = exe_mod,
     });
 
-    const run_unit_tests = b.addRunArtifact(tests);
-    test_step.dependOn(&run_unit_tests.step);
-    b.installArtifact(tests);
+    const jit_tests = b.addTest(.{
+        .root_module = jit_mod,
+    });
+
+    const run_exe_tests = b.addRunArtifact(exe_tests);
+    const run_jit_tests = b.addRunArtifact(jit_tests);
+
+    test_step.dependOn(&run_exe_tests.step);
+    test_step.dependOn(&run_jit_tests.step);
 }
