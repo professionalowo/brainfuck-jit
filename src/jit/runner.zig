@@ -11,10 +11,9 @@ pub fn run(code: []const u8) !void {
         0,
     );
     defer std.posix.munmap(executable_memory);
+    @memcpy(executable_memory, code);
 
     try std.process.protectMemory(executable_memory, .{ .read = true, .write = false, .execute = true });
-
-    @memcpy(executable_memory, code);
 
     const func: *const fn () void = @ptrCast(executable_memory);
     func();
