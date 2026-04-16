@@ -1,18 +1,16 @@
 const std = @import("std");
 const mem = std.mem;
-const process = std.process;
 const parser = @import("frontend").Parser;
 const interpreter = @import("interpret.zig");
 const optimizer = @import("optimizer.zig");
 const jit = @import("jit");
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{ .thread_safe = false }){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
 
-    const args = try process.argsAlloc(allocator);
-    defer process.argsFree(allocator, args);
+    const allocator = init.gpa;
+    const args = try init.minimal.args.toSlice(allocator);
+    defer allocator.free(args);
 
     if (args.len < 2) @panic("Usage: brainfuck [code...]\n");
 
@@ -26,9 +24,9 @@ pub fn main() !void {
     const optimized = try optimizer.optimizeAlloc(allocator, tokens);
     defer allocator.free(optimized);
 
-    var w = std.fs.File.stdout().writer(&.{});
+    var w = std.Io.File.stdout().writer(io, &.{});
     const stdout = &w.interface;
-    var r = std.fs.File.stdin().reader(&.{});
+    var r = std.Io.File.stdin().reader(io, &.{});
     const stdin = &r.interface;
 
     var compiled = try jit.compile(allocator, optimized, stdout, stdin);
