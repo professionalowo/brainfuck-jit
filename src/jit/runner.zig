@@ -5,7 +5,7 @@ pub fn run(code: []const u8) !void {
     const executable_memory = std.posix.mmap(
         null,
         code.len,
-        std.posix.PROT.READ | std.posix.PROT.WRITE | std.posix.PROT.EXEC,
+        .{ .READ = true, .WRITE = true, .EXEC = true },
         .{ .ANONYMOUS = true, .TYPE = .PRIVATE },
         -1,
         0,
