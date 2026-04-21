@@ -44,8 +44,7 @@ pub fn emitGetc(ctx: *AssemblerContext) !void {
 }
 
 fn getc(reader: *std.Io.Reader) callconv(.c) u8 {
-    _ = reader;
-    return 0;
+    return reader.takeByte() catch 0;
 }
 
 pub fn emitLParen(ctx: *AssemblerContext) !u64 {
